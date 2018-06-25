@@ -16,9 +16,9 @@ defmodule Ramen.Config do
 end
 
 defmodule Ramen do
-  @spec new(String.t(), fun()) :: %Ramen.Config{}
-  def new(access_token, get) do
-    %Ramen.Config{client: Tentacat.Client.new(%{access_token: access_token}), get: get}
+  @spec new(String.t(), fun(), fun()) :: %Ramen.Config{}
+  def new(token, client, get) do
+    %Ramen.Config{client: client.(%{access_token: token}), get: get}
   end
 
   @spec list_pull_requests(String.t(), String.t(), %Ramen.Config{}) ::
