@@ -23,13 +23,18 @@ defmodule Decoder do
 end
 
 defmodule Ramen.Config do
-  defstruct [:token, :client, :get]
+  defstruct [:token, :client, :get, :http_client]
 end
 
 defmodule Ramen do
-  @spec new(String.t(), fun(), fun()) :: %Ramen.Config{}
-  def new(token, client, get) do
-    %Ramen.Config{token: token, client: client.(%{access_token: token}), get: get}
+  @spec new(String.t(), fun(), fun(), fun()) :: %Ramen.Config{}
+  def new(token, client, get, http_client) do
+    %Ramen.Config{
+      token: token,
+      client: client.(%{access_token: token}),
+      get: get,
+      http_client: http_client
+    }
   end
 
   @spec list_pull_requests(String.t(), String.t(), %Ramen.Config{}) ::
@@ -55,7 +60,7 @@ defmodule Ramen do
 
   def fetch_participants(owner, repository, number, config) do
     case do_fetch_participants(owner, repository, number, config) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: response_body}} ->
+      {:ok, %{status_code: 200, body: response_body}} ->
         participants =
           response_body
           |> Poison.decode!()
@@ -63,11 +68,11 @@ defmodule Ramen do
 
         {:ok, participants}
 
-      {:ok, %HTTPoison.Response{status_code: status_code, body: error_body}} ->
+      {:ok, %{status_code: status_code, body: error_body}} ->
         decoded_body = Poison.decode!(error_body)
         {:error, status_code, decoded_body}
 
-      {:error, %HTTPoison.Error{reason: reason}} ->
+      {:error, %{reason: reason}} ->
         {:error, reason}
     end
   end
@@ -89,7 +94,7 @@ defmodule Ramen do
 
     encoded_body = Poison.encode!(%{query: body})
 
-    HTTPoison.request(:post, "https://api.github.com/graphql", encoded_body, [
+    config.http_client.(:post, "https://api.github.com/graphql", encoded_body, [
       {"Authorization", "Bearer #{config.token}"}
     ])
   end
