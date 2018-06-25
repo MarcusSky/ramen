@@ -15,6 +15,10 @@ defmodule Decoder do
   end
 
   def decode(payload, into: Participant) do
+    payload
+    |> get_in(["data", "repository", "pullRequest", "participants", "edges"])
+    |> Enum.map(&get_in(&1, ["node", "login"]))
+    |> Enum.map(&%Participant{username: &1})
   end
 end
 
