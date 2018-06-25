@@ -11,22 +11,26 @@ defmodule Decoder do
   end
 end
 
+defmodule Ramen.Config do
+  defstruct [:client, :get]
+end
+
 defmodule Ramen do
-  @spec new(String.t()) :: %{access_token: String.t()}
-  def new(access_token) do
-    %{access_token: access_token}
+  @spec new(String.t(), fun()) :: %Ramen.Config{}
+  def new(access_token, get) do
+    %Ramen.Config{client: Tentacat.Client.new(%{access_token: access_token}), get: get}
   end
 
-  @spec list_pull_requests(String.t(), String.t(), struct()) ::
+  @spec list_pull_requests(String.t(), String.t(), %Ramen.Config{}) ::
           {:ok, [%PullRequest{}]} | {:error, String.t()}
-  def list_pull_requests(owner, repository, client) do
-    case do_list_pull_requests(owner, repository, client) do
+  def list_pull_requests(owner, repository, config) do
+    case do_list_pull_requests(owner, repository, config) do
       {200, pull_requests, _} -> {:ok, Enum.map(pull_requests, &Decoder.decode(&1))}
       {_, error_body, _} -> {:error, error_body}
     end
   end
 
-  defp do_list_pull_requests(owner, repository, client) do
-    Tentacat.Pulls.filter(Tentacat.Client.new(client), owner, repository, %{state: "open"})
+  defp do_list_pull_requests(owner, repository, config) do
+    config.get.(config.client, owner, repository, %{state: "open"})
   end
 end
