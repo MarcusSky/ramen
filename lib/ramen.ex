@@ -1,5 +1,5 @@
 defmodule PullRequest do
-  defstruct [:title, :number]
+  defstruct [:title, :number, :participants]
 end
 
 defmodule Participant do
@@ -34,24 +34,53 @@ defmodule Ramen do
 
   @spec list_pull_requests(String.t(), String.t(), %Ramen.Config{}) ::
           {:ok, [%PullRequest{}]} | {:error, String.t()}
-  def list_pull_requests(owner, repository, config) do
+  def list_pull_requests(owner, repository, config, opts \\ []) do
     case do_list_pull_requests(owner, repository, config) do
-      {200, pull_requests, _} -> {:ok, Enum.map(pull_requests, &Decoder.decode(&1))}
-      {_, error_body, _} -> {:error, error_body}
+      {200, pull_requests, _} ->
+        prs = decode_pull_requests(pull_requests)
+
+        if should_fetch_participants?(opts) do
+          {:ok, Enum.map(prs, &add_participants(&1, owner, repository, config))}
+        else
+          {:ok, prs}
+        end
+
+      {_, error_body, _} ->
+        {:error, error_body}
+    end
+  end
+
+  defp should_fetch_participants?(opts), do: Keyword.get(opts, :with_participants)
+  defp decode_pull_requests(body), do: Enum.map(body, &Decoder.decode(&1))
+
+  def fetch_participants(owner, repository, number, config) do
+    case do_fetch_participants(owner, repository, number, config) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: response_body}} ->
+        participants =
+          response_body
+          |> Poison.decode!()
+          |> Decoder.decode(into: Participant)
+
+        {:ok, participants}
+
+      {:ok, %HTTPoison.Response{status_code: status_code, body: error_body}} ->
+        decoded_body = Poison.decode!(error_body)
+        {:error, status_code, decoded_body}
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, reason}
+    end
+  end
+
+  defp add_participants(pr, owner, repository, config) do
+    case fetch_participants(owner, repository, pr.number, config) do
+      {:ok, participants} ->
+        Map.put(pr, :participants, participants)
     end
   end
 
   defp do_list_pull_requests(owner, repository, config) do
     config.get.(config.client, owner, repository, %{state: "open"})
-  end
-
-  def fetch_participants(owner, repository, number, config) do
-    case do_fetch_participants(owner, repository, number, config) do
-      {:ok, %{body: response_body}} -> 
-        decoded_body = Poison.decode!(response_body)
-        {:ok, decoded_body}
-      {:error, error} -> {:error, error}
-    end
   end
 
   defp do_fetch_participants(owner, repository, number, config) do
