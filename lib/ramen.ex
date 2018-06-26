@@ -36,18 +36,6 @@ defmodule Ramen do
     }
   end
 
-  def run() do
-    config =
-      new(
-        "c52690eeb06f8d8fd05e8cb399123288dab55238",
-        &Tentacat.Client.new/1,
-        &Tentacat.Pulls.filter/4,
-        &HTTPoison.request/4
-      )
-
-    {:ok, prs} = list_pull_requests("jaya", "jaya_bot_lab", config, with_participants: true)
-  end
-
   @spec list_pull_requests(String.t(), String.t(), %Ramen.Config{}) ::
           {:ok, [%PullRequest{}]} | {:error, String.t()}
   def list_pull_requests(owner, repository, config, opts \\ []) do
