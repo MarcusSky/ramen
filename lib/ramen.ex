@@ -7,8 +7,7 @@ defmodule Participant do
 end
 
 defmodule Decoder do
-  @spec decode(%{}) :: %PullRequest{}
-  def decode(payload) do
+  def decode(payload, into: PullRequest) do
     %{"title" => title, "number" => number} = payload
 
     %PullRequest{title: title, number: number}
@@ -37,6 +36,18 @@ defmodule Ramen do
     }
   end
 
+  def run() do
+    config =
+      new(
+        "c52690eeb06f8d8fd05e8cb399123288dab55238",
+        &Tentacat.Client.new/1,
+        &Tentacat.Pulls.filter/4,
+        &HTTPoison.request/4
+      )
+
+    {:ok, prs} = list_pull_requests("jaya", "jaya_bot_lab", config, with_participants: true)
+  end
+
   @spec list_pull_requests(String.t(), String.t(), %Ramen.Config{}) ::
           {:ok, [%PullRequest{}]} | {:error, String.t()}
   def list_pull_requests(owner, repository, config, opts \\ []) do
@@ -56,7 +67,7 @@ defmodule Ramen do
   end
 
   defp should_fetch_participants?(opts), do: Keyword.get(opts, :with_participants)
-  defp decode_pull_requests(body), do: Enum.map(body, &Decoder.decode(&1))
+  defp decode_pull_requests(body), do: Enum.map(body, &Decoder.decode(&1, into: PullRequest))
 
   def fetch_participants(owner, repository, number, config) do
     case do_fetch_participants(owner, repository, number, config) do
