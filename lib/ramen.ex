@@ -33,7 +33,7 @@ defmodule Ramen do
 
   @spec list_pull_requests(String.t(), String.t(), %Ramen.Config{}) ::
           {:ok, [%PullRequest{}]} | {:error, String.t()}
-  def list_pull_requests(owner, repository, config, opts \\ []) do
+  def list_pull_requests(owner, repository, config) do
     case do_list_pull_requests(owner, repository, config) do
       {:ok, %{status_code: 200, body: pull_requests}} ->
         prs =
@@ -41,11 +41,7 @@ defmodule Ramen do
           |> Poison.decode!()
           |> Enum.map(&Decoder.decode(&1, into: PullRequest))
 
-        if should_fetch_participants?(opts) do
-          {:ok, Enum.map(prs, &add_participants(&1, owner, repository, config))}
-        else
-          {:ok, prs}
-        end
+        {:ok, prs}
 
       {:ok, %{status_code: status_code, body: error_body}} ->
         {:error, Poison.decode!(error_body)}
@@ -54,8 +50,6 @@ defmodule Ramen do
         {:error, reason}
     end
   end
-
-  defp should_fetch_participants?(opts), do: Keyword.get(opts, :with_participants)
 
   def fetch_participants(owner, repository, number, config) do
     case do_fetch_participants(owner, repository, number, config) do
@@ -76,12 +70,11 @@ defmodule Ramen do
     end
   end
 
-  defp add_participants(pr, owner, repository, config) do
-    case fetch_participants(owner, repository, pr.number, config) do
-      {:ok, participants} ->
-        Map.put(pr, :participants, participants)
-    end
-  end
+  @spec add_participants(%PullRequest{}, list(Participant)) :: %PullRequest{
+          participants: list(Participant)
+        }
+  defp add_participants(pull_request, participants),
+    do: Map.put(pull_request, :participants, participants)
 
   defp do_list_pull_requests(owner, repository, config) do
     url = "https://api.github.com/repos/#{owner}/#{repository}/pulls"

@@ -29,21 +29,6 @@ defmodule RamenTest do
 
       assert {:error, _} = Ramen.list_pull_requests("jaya", "jaya_bot_lab", config)
     end
-
-    #FIXME: with a single mocked `http_client` I can't make 2 requests, since
-    #they will always return the same value for list and fetch participants, how
-    #to solve this?
-    test "returns a tuple with a list of Pull Requests and participants" do
-      body =
-        "{\"data\":{\"repository\":{\"pullRequest\":{\"participants\":{\"edges\":[{\"node\":{\"login\":\"MarcusSky\"}}]}}}}}"
-
-      http_client = http_client(:ok, %{status_code: 200, body: body})
-
-      config = Ramen.new("valid_token", http_client)
-
-      assert {:ok, [%PullRequest{participants: [%Participant{}]} | _]} =
-               Ramen.list_pull_requests("jaya", "jaya_bot_lab", config, with_participants: true)
-    end
   end
 
   describe "fetch_participants/4" do
