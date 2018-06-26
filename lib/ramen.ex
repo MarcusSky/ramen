@@ -22,26 +22,24 @@ defmodule Decoder do
 end
 
 defmodule Ramen.Config do
-  defstruct [:token, :client, :get, :http_client]
+  defstruct [:token, :http_client]
 end
 
 defmodule Ramen do
-  @spec new(String.t(), fun(), fun(), fun()) :: %Ramen.Config{}
-  def new(token, client, get, http_client) do
-    %Ramen.Config{
-      token: token,
-      client: client.(%{access_token: token}),
-      get: get,
-      http_client: http_client
-    }
+  @spec new(String.t(), fun()) :: %Ramen.Config{}
+  def new(token, http_client) do
+    %Ramen.Config{token: token, http_client: http_client}
   end
 
   @spec list_pull_requests(String.t(), String.t(), %Ramen.Config{}) ::
           {:ok, [%PullRequest{}]} | {:error, String.t()}
   def list_pull_requests(owner, repository, config, opts \\ []) do
     case do_list_pull_requests(owner, repository, config) do
-      {200, pull_requests, _} ->
-        prs = decode_pull_requests(pull_requests)
+      {:ok, %{status_code: 200, body: pull_requests}} ->
+        prs =
+          pull_requests
+          |> Poison.decode!()
+          |> Enum.map(&Decoder.decode(&1, into: PullRequest))
 
         if should_fetch_participants?(opts) do
           {:ok, Enum.map(prs, &add_participants(&1, owner, repository, config))}
@@ -49,13 +47,15 @@ defmodule Ramen do
           {:ok, prs}
         end
 
-      {_, error_body, _} ->
-        {:error, error_body}
+      {:ok, %{status_code: status_code, body: error_body}} ->
+        {:error, Poison.decode!(error_body)}
+
+      {:error, %{reason: reason}} ->
+        {:error, reason}
     end
   end
 
   defp should_fetch_participants?(opts), do: Keyword.get(opts, :with_participants)
-  defp decode_pull_requests(body), do: Enum.map(body, &Decoder.decode(&1, into: PullRequest))
 
   def fetch_participants(owner, repository, number, config) do
     case do_fetch_participants(owner, repository, number, config) do
@@ -84,7 +84,13 @@ defmodule Ramen do
   end
 
   defp do_list_pull_requests(owner, repository, config) do
-    config.get.(config.client, owner, repository, %{state: "open"})
+    url = "https://api.github.com/repos/#{owner}/#{repository}/pulls"
+    get_with_auth(url, config)
+  end
+
+  defp get_with_auth(url, config = %Ramen.Config{}) do
+    headers = [{"Authorization", "Bearer #{config.token}"}]
+    config.http_client.(:get, url, "", headers)
   end
 
   defp do_fetch_participants(owner, repository, number, config) do
