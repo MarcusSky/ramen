@@ -7,7 +7,7 @@ defmodule Participant do
 end
 
 defmodule Decoder do
-  def decode(payload, into: PullRequest) do
+  def decode(payload, into: [PullRequest]) do
     %{"title" => title, "number" => number} = payload
 
     %PullRequest{title: title, number: number}
@@ -64,7 +64,7 @@ defmodule Ramen do
   defp decode_pull_requests(pull_requests) do
     pull_requests
     |> Poison.decode!()
-    |> Enum.map(&Decoder.decode(&1, into: PullRequest))
+    |> Enum.map(&Decoder.decode(&1, into: [PullRequest]))
   end
 
   @spec decode_participants(list(map())) :: list(Participant)
