@@ -3,40 +3,31 @@ defmodule RamenTest do
   doctest Ramen
 
   test "new/3" do
-    assert %{client: _, token: "test_token", http_client: _, get: _} =
-             Ramen.new("test_token", empty(), empty(), empty())
+    assert %{token: "test_token", http_client: _} = Ramen.new("test_token", fn -> {} end)
   end
 
   describe "list_pull_requests/3" do
     setup do
-      get = get(200, [%{"title" => "hello", "number" => 2}])
+      http_client =
+        http_client(:ok, %{status_code: 200, body: "[{\"title\":\"hello\", \"number\": 2}]"})
 
-      %{get: get}
+      %{http_client: http_client}
     end
 
-    test "returns a tuple with a list of Pull Requests when given correct information", %{get: get} do
-      config = Ramen.new("valid_token", empty(), get, empty())
+    test "returns a tuple with a list of Pull Requests when given correct information", %{
+      http_client: http_client
+    } do
+      config = Ramen.new("valid_token", http_client)
 
       assert {:ok, [%PullRequest{participants: nil} | _]} =
                Ramen.list_pull_requests("jaya", "jaya_bot_lab", config)
     end
 
     test "returns a tuple with an error given incorrect information" do
-      get = get(404, %{"error" => "not found"})
-      config = Ramen.new("invalid_token", empty(), get, empty())
+      http_client = http_client(:ok, %{status_code: 404, body: "{\"error\":\"not_found\"}"})
+      config = Ramen.new("invalid_token", http_client)
 
       assert {:error, _} = Ramen.list_pull_requests("jaya", "jaya_bot_lab", config)
-    end
-
-    test "returns a tuple with a list of Pull Requests and participants", %{get: get} do
-      body =
-        "{\"data\":{\"repository\":{\"pullRequest\":{\"participants\":{\"edges\":[{\"node\":{\"login\":\"MarcusSky\"}}]}}}}}"
-      http_client = http_client(:ok, %{status_code: 200, body: body})
-
-      config = Ramen.new("valid_token", empty(), get, http_client)
-
-      assert {:ok, [%PullRequest{participants: [%Participant{}]} | _]} =
-               Ramen.list_pull_requests("jaya", "jaya_bot_lab", config, with_participants: true)
     end
   end
 
@@ -44,9 +35,10 @@ defmodule RamenTest do
     test "retuns a tuple with a list of Participants" do
       body =
         "{\"data\":{\"repository\":{\"pullRequest\":{\"participants\":{\"edges\":[{\"node\":{\"login\":\"MarcusSky\"}}]}}}}}"
+
       http_client = http_client(:ok, %{status_code: 200, body: body})
 
-      config = Ramen.new("valid_token", empty(), empty(), http_client)
+      config = Ramen.new("valid_token", http_client)
 
       assert {:ok, [%Participant{} | _]} =
                Ramen.fetch_participants("jaya", "jaya_bot_lab", 2, config)
@@ -56,21 +48,19 @@ defmodule RamenTest do
       body = "{\"data\":{\"message\":\"invalid token\"}}"
       http_client = http_client(:ok, %{status_code: 401, body: body})
 
-      config = Ramen.new("invalid_token", empty(), empty(), http_client)
+      config = Ramen.new("invalid_token", http_client)
 
       assert {:error, 401, _} = Ramen.fetch_participants("jaya", "jaya_bot_lab", 2, config)
     end
 
     test "retuns a tuple with error and reason" do
       http_client = http_client(:error, %{reason: "client broke"})
-      config = Ramen.new("invalid_token", empty(), empty(), http_client)
+      config = Ramen.new("invalid_token", http_client)
 
       assert {:error, "client broke"} =
                Ramen.fetch_participants("jaya", "jaya_bot_lab", 2, config)
     end
   end
 
-  defp empty, do: fn _ -> {} end
-  defp get(status_code, body), do: fn _, _, _, _ -> {status_code, body, %{}} end
   defp http_client(status_atom, body), do: fn _, _, _, _ -> {status_atom, body} end
 end
