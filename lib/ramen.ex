@@ -13,7 +13,7 @@ defmodule Decoder do
     %PullRequest{title: title, number: number}
   end
 
-  def decode(payload, into: Participant) do
+  def decode(payload, into: [Participant]) do
     payload
     |> get_in(["data", "repository", "pullRequest", "participants", "edges"])
     |> Enum.map(&get_in(&1, ["node", "login"]))
@@ -36,12 +36,7 @@ defmodule Ramen do
   def list_pull_requests(owner, repository, config) do
     case do_list_pull_requests(owner, repository, config) do
       {:ok, %{status_code: 200, body: pull_requests}} ->
-        prs =
-          pull_requests
-          |> Poison.decode!()
-          |> Enum.map(&Decoder.decode(&1, into: PullRequest))
-
-        {:ok, prs}
+        {:ok, decode_pull_requests(pull_requests)}
 
       {:ok, %{status_code: status_code, body: error_body}} ->
         {:error, Poison.decode!(error_body)}
@@ -54,12 +49,7 @@ defmodule Ramen do
   def fetch_participants(owner, repository, number, config) do
     case do_fetch_participants(owner, repository, number, config) do
       {:ok, %{status_code: 200, body: response_body}} ->
-        participants =
-          response_body
-          |> Poison.decode!()
-          |> Decoder.decode(into: Participant)
-
-        {:ok, participants}
+        {:ok, decode_participants(response_body)}
 
       {:ok, %{status_code: status_code, body: error_body}} ->
         decoded_body = Poison.decode!(error_body)
@@ -68,6 +58,20 @@ defmodule Ramen do
       {:error, %{reason: reason}} ->
         {:error, reason}
     end
+  end
+
+  @spec decode_pull_requests(list(map())) :: list(PullRequest)
+  defp decode_pull_requests(pull_requests) do
+    pull_requests
+    |> Poison.decode!()
+    |> Enum.map(&Decoder.decode(&1, into: PullRequest))
+  end
+
+  @spec decode_participants(list(map())) :: list(Participant)
+  defp decode_participants(participants) do
+    participants
+    |> Poison.decode!()
+    |> Decoder.decode(into: [Participant])
   end
 
   @spec add_participants(%PullRequest{}, list(Participant)) :: %PullRequest{
