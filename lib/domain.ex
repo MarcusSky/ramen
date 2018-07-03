@@ -25,4 +25,3 @@ end
 defmodule Ramen.Config do
   defstruct [:token, :http_client]
 end
-
