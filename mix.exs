@@ -36,6 +36,7 @@ defmodule Ramen.MixProject do
 
   defp package() do
     [
+      maintainers: ["Marcus Bruno Vieira"],
       name: "ramen",
       licenses: ["Apache 2.0"],
       links: %{"GitHub" => "https://github.com/MarcusSky/ramen"}
