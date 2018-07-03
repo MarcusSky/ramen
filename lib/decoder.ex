@@ -48,7 +48,7 @@ defmodule Ramen.Decoder do
        url: url,
        comment_author: comment_author,
        title: title,
-       issue_number: issue_number,
+       number: issue_number,
        repository: repo_name,
        organization: organization
      }}
