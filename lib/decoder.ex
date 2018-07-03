@@ -4,6 +4,8 @@ defmodule Ramen.Decoder do
   payloads into understandable structs
   """
 
+  alias Ramen.{PullRequest, Participant, IssueComment}
+
   def decode(payload, into: [PullRequest]) do
     %{"title" => title, "number" => number} = payload
 
