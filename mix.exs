@@ -18,6 +18,10 @@ defmodule Ramen.MixProject do
     ]
   end
 
+  defp description do
+    "A Richer GitHub API Client."
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
