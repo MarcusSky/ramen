@@ -20,9 +20,8 @@ defmodule Ramen.Decoder do
   end
 
   @spec decode(map(), String.t()) :: {atom, atom, %Comment{}}
-  def decode(payload, "issue_comment") do
+  def decode(%{"action" => "created"} = payload, "issue_comment") do
     %{
-      "action" => "created",
       "comment" => %{
         "body" => body,
         "html_url" => url,
@@ -54,9 +53,9 @@ defmodule Ramen.Decoder do
      }}
   end
 
-  def decode(payload, "pull_request_review_comment") do
+  @spec decode(map(), String.t()) :: {atom, atom, %Comment{}}
+  def decode(%{"action" => "created"} = payload, "pull_request_review_comment") do
     %{
-      "action" => "created",
       "comment" => %{
         "body" => body,
         "html_url" => url,
@@ -88,9 +87,9 @@ defmodule Ramen.Decoder do
      }}
   end
 
-  def decode(payload, "pull_request_review") do
+  @spec decode(map(), String.t()) :: {atom, atom, %PullRequestReview{}}
+  def decode(%{"action" => "submitted"} = payload, "pull_request_review") do
     %{
-      "action" => "submitted",
       "review" => %{
         "html_url" => url,
         "state" => state,
@@ -123,9 +122,9 @@ defmodule Ramen.Decoder do
      }}
   end
 
-  def decode(payload, "pull_request") do
+  @spec decode(map(), String.t()) :: {atom, atom, %ReviewRequest{}}
+  def decode(%{"action" => "review_requested"} = payload, "pull_request") do
     %{
-      "action" => "review_requested",
       "requested_reviewer" => %{
         "login" => reviewer
       },
@@ -157,6 +156,7 @@ defmodule Ramen.Decoder do
      }}
   end
 
+  @spec decode(map(), String.t()) :: {atom, atom, %BuildStatus{}}
   def decode(payload, "status") do
     %{
       "state" => state,
@@ -178,6 +178,10 @@ defmodule Ramen.Decoder do
        url: url,
        branch: branch
      }}
+  end
+
+  def decode(%{"action" => action} = _payload, event_name) do
+    raise "Decoder not implemented for #{event_name} with action #{action}"
   end
 
   def decode(_payload, event_name) do

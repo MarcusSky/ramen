@@ -36,13 +36,23 @@ defmodule Ramen.DecoderTest do
       assert {:comment, :created, %Comment{}} = Decoder.decode(payload, "issue_comment")
     end
 
-    test "decodes into a Comment from a PullRequest" do
+    test "decodes into a Comment from a PullRequest - submitted" do
       payload =
         File.read!("payloads/pull_request_review_comment.json")
         |> Poison.decode!()
 
       assert {:comment, :created, %Comment{}} =
                Decoder.decode(payload, "pull_request_review_comment")
+    end
+
+    test "does not decode an edited comment" do
+      payload =
+        File.read!("payloads/pull_request_review_edited.json")
+        |> Poison.decode!()
+
+      assert_raise RuntimeError, ~r/for pull_request_review_comment with action edited/, fn ->
+        Decoder.decode(payload, "pull_request_review_comment")
+      end
     end
 
     test "decodes into a PullRequestReview - approved" do
