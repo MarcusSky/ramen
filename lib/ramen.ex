@@ -1,5 +1,6 @@
 defmodule Ramen do
   alias Ramen.Decoder
+  alias Ramen.{PullRequest, Participant}
 
   @spec new(String.t(), fun()) :: %Ramen.Config{}
   def new(token, http_client) do
@@ -13,7 +14,7 @@ defmodule Ramen do
       {:ok, %{status_code: 200, body: pull_requests}} ->
         {:ok, decode_pull_requests(pull_requests)}
 
-      {:ok, %{status_code: status_code, body: error_body}} ->
+      {:ok, %{status_code: _status_code, body: error_body}} ->
         {:error, Poison.decode!(error_body)}
 
       {:error, %{reason: reason}} ->

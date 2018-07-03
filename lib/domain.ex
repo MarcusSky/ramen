@@ -3,7 +3,7 @@ defmodule Ramen.PullRequest do
 end
 
 defmodule Ramen.PullRequestReview do
-  defstruct [:author, :approved, :changes_requested, :url, :title, :repository]
+  defstruct [:author, :url, :title, :number, :repository, :organization]
 end
 
 defmodule Ramen.ReviewRequest do
@@ -11,7 +11,7 @@ defmodule Ramen.ReviewRequest do
 end
 
 defmodule Ramen.BuildStatus do
-  defstruct [:author, :success, :url, :branch]
+  defstruct [:author, :url, :branch]
 end
 
 defmodule Ramen.Comment do
