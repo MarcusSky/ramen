@@ -1,31 +1,7 @@
-defmodule PullRequest do
-  defstruct [:title, :number, :participants]
-end
-
-defmodule Participant do
-  defstruct [:username]
-end
-
-defmodule Decoder do
-  def decode(payload, into: [PullRequest]) do
-    %{"title" => title, "number" => number} = payload
-
-    %PullRequest{title: title, number: number}
-  end
-
-  def decode(payload, into: [Participant]) do
-    payload
-    |> get_in(["data", "repository", "pullRequest", "participants", "edges"])
-    |> Enum.map(&get_in(&1, ["node", "login"]))
-    |> Enum.map(&%Participant{username: &1})
-  end
-end
-
-defmodule Ramen.Config do
-  defstruct [:token, :http_client]
-end
-
 defmodule Ramen do
+  alias Ramen.Decoder
+  alias Ramen.{PullRequest, Participant}
+
   @spec new(String.t(), fun()) :: %Ramen.Config{}
   def new(token, http_client) do
     %Ramen.Config{token: token, http_client: http_client}
@@ -38,7 +14,7 @@ defmodule Ramen do
       {:ok, %{status_code: 200, body: pull_requests}} ->
         {:ok, decode_pull_requests(pull_requests)}
 
-      {:ok, %{status_code: status_code, body: error_body}} ->
+      {:ok, %{status_code: _status_code, body: error_body}} ->
         {:error, Poison.decode!(error_body)}
 
       {:error, %{reason: reason}} ->

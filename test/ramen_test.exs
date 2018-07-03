@@ -2,6 +2,8 @@ defmodule RamenTest do
   use ExUnit.Case
   doctest Ramen
 
+  alias Ramen.{PullRequest, Participant}
+
   test "new/3" do
     assert %{token: "test_token", http_client: _} = Ramen.new("test_token", fn -> {} end)
   end
