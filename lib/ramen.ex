@@ -1,19 +1,3 @@
-defmodule PullRequest do
-  defstruct [:title, :number, :participants]
-end
-
-defmodule IssueComment do
-  defstruct [:body, :url, :comment_author, :title, :issue_number, :repository, :organization]
-end
-
-defmodule Participant do
-  defstruct [:username]
-end
-
-defmodule Ramen.Config do
-  defstruct [:token, :http_client]
-end
-
 defmodule Ramen do
   alias Ramen.Decoder
 
