@@ -6,10 +6,6 @@ defmodule Ramen.PullRequestReview do
   defstruct [:author, :approved, :changes_requested, :url, :title, :repository]
 end
 
-defmodule Ramen.PullRequestReviewComment do
-  defstruct [:body, :url, :comment_author, :title, :number, :repository, :organization]
-end
-
 defmodule Ramen.ReviewRequest do
   defstruct [:requester, :reviewer, :title, :url, :number, :repository, :organization]
 end
@@ -18,7 +14,7 @@ defmodule Ramen.BuildStatus do
   defstruct [:author, :success, :url, :branch]
 end
 
-defmodule Ramen.IssueComment do
+defmodule Ramen.Comment do
   defstruct [:body, :url, :comment_author, :title, :number, :repository, :organization]
 end
 

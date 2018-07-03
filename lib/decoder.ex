@@ -4,7 +4,7 @@ defmodule Ramen.Decoder do
   payloads into understandable structs
   """
 
-  alias Ramen.{PullRequest, Participant, IssueComment}
+  alias Ramen.{PullRequest, Participant, Comment}
 
   def decode(payload, into: [PullRequest]) do
     %{"title" => title, "number" => number} = payload
@@ -19,7 +19,7 @@ defmodule Ramen.Decoder do
     |> Enum.map(&%Participant{username: &1})
   end
 
-  @spec decode(map(), String.t()) :: {atom, atom, %IssueComment{}}
+  @spec decode(map(), String.t()) :: {atom, atom, %Comment{}}
   def decode(payload, "issue_comment") do
     %{
       "action" => "created",
@@ -43,7 +43,7 @@ defmodule Ramen.Decoder do
     } = payload
 
     {:issue_comment, :created,
-     %IssueComment{
+     %Comment{
        body: body,
        url: url,
        comment_author: comment_author,
