@@ -4,7 +4,15 @@ defmodule Ramen.Decoder do
   payloads into understandable structs
   """
 
-  alias Ramen.{PullRequest, Participant, Comment, PullRequestReview, ReviewRequest, BuildStatus}
+  alias Ramen.{
+    PullRequest,
+    Participant,
+    Comment,
+    PullRequestReview,
+    ReviewRequest,
+    BuildStatus,
+    Issue
+  }
 
   def decode(payload, into: [PullRequest]) do
     %{"title" => title, "number" => number} = payload
@@ -164,7 +172,7 @@ defmodule Ramen.Decoder do
       "commit" => %{
         "committer" => %{
           "login" => author
-       }
+        }
       },
       "branches" => branches
     } = payload
@@ -177,6 +185,60 @@ defmodule Ramen.Decoder do
        author: author,
        url: url,
        branch: branch
+     }}
+  end
+
+  @spec decode(map(), String.t()) :: {atom, atom, %Issue{}}
+  @doc """
+  Decodes an issue event. The second attribute on the tuple, namely `action`, can
+  be the following values:
+
+  - :assigned
+  - :unassigned
+  - :labeled
+  - :unlabeled
+  - :opened
+  - :edited
+  - :milestoned
+  - :demilestoned
+  - :closed
+  - :reopened
+
+  Returns a tuple containing {:issue, action, struct}
+  """
+  def decode(payload, "issues") do
+    %{
+      "action" => state,
+      "issue" => %{
+        "html_url" => url,
+        "number" => number,
+        "body" => body,
+        "title" => title,
+        "user" => %{
+          "login" => author
+        },
+        "assignee" => assignee
+      },
+      "repository" => %{
+        "name" => repo_name,
+        "owner" => %{
+          "login" => organization
+        }
+      }
+    } = payload
+
+    assignee = get_in(assignee, ["login"])
+
+    {:issue, String.to_atom(state),
+     %Issue{
+       body: body,
+       url: url,
+       author: author,
+       assignee: assignee,
+       number: number,
+       title: title,
+       repository: repo_name,
+       organization: organization
      }}
   end
 

@@ -2,6 +2,10 @@ defmodule Ramen.PullRequest do
   defstruct [:title, :number, :participants]
 end
 
+defmodule Ramen.Issue do
+  defstruct [:body, :url, :author, :assignee, :title, :number, :repository, :organization]
+end
+
 defmodule Ramen.PullRequestReview do
   defstruct [:author, :url, :title, :number, :repository, :organization]
 end
