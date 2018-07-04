@@ -19,7 +19,7 @@ defmodule Ramen.BuildStatus do
 end
 
 defmodule Ramen.Comment do
-  defstruct [:body, :url, :comment_author, :title, :number, :repository, :organization]
+  defstruct [:body, :url, :author, :title, :number, :repository, :organization]
 end
 
 defmodule Ramen.Participant do
