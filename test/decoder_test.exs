@@ -45,7 +45,7 @@ defmodule Ramen.DecoderTest do
       assert {:comment, :created, %Comment{}} = Decoder.decode(payload, "issue_comment")
     end
 
-    test "decodes into a Comment from a PullRequest - submitted" do
+    test "decodes into a Comment from a PullRequestReviewComment" do
       payload =
         File.read!("payloads/pull_request_review_comment.json")
         |> Poison.decode!()

@@ -33,7 +33,7 @@ defmodule Ramen.Lenses do
       {:author, lenses.comment ~> lenses.user ~> lenses.login},
       {:title, lenses.issue ~> lenses.title},
       {:number, lenses.issue ~> lenses.number},
-      {:body, lenses.issue ~> lenses.body},
+      {:body, lenses.comment ~> lenses.body},
       {:repository, lenses.repository ~> lenses.name},
       {:organization, lenses.repository ~> lenses.owner ~> lenses.login}
     ]
@@ -91,6 +91,7 @@ defmodule Ramen.Lenses do
       {:branches, lenses.branches}
     ]
   end
+  def for(_), do: []
 
   def apply(lenses, payload) do
     Enum.reduce(lenses, %{}, fn {name, lens}, acc -> 
