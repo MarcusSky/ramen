@@ -54,7 +54,7 @@ defmodule Ramen.Decoder do
       |> Ramen.Lenses.for()
       |> Ramen.Lenses.apply(payload)
 
-    review_state = if values.state == "approved", do: :approved, else: :changes_requested
+    review_state = String.to_atom(values.state)
 
     {:pull_request_review, review_state, struct(PullRequestReview, values)}
   end

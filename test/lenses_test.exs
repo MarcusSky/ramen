@@ -69,6 +69,7 @@ defmodule Ramen.LensesTest do
                state: %Lens{get: _, put: _},
                url: %Lens{get: _, put: _},
                author: %Lens{get: _, put: _},
+               owner: %Lens{get: _, put: _},
                title: %Lens{get: _, put: _},
                number: %Lens{get: _, put: _},
                repository: %Lens{get: _, put: _},

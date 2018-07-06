@@ -7,7 +7,7 @@ defmodule Ramen.Issue do
 end
 
 defmodule Ramen.PullRequestReview do
-  defstruct [:author, :url, :title, :number, :repository, :organization]
+  defstruct [:author, :owner, :url, :title, :number, :repository, :organization]
 end
 
 defmodule Ramen.ReviewRequest do

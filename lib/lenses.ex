@@ -60,6 +60,7 @@ defmodule Ramen.Lenses do
       {:state, lenses.review ~> lenses.state},
       {:url, lenses.review ~> lenses.html_url},
       {:author, lenses.review ~> lenses.user ~> lenses.login},
+      {:owner, lenses.pull_request ~> lenses.user ~> lenses.login},
       {:title, lenses.pull_request ~> lenses.title},
       {:number, lenses.pull_request ~> lenses.number},
       {:repository, lenses.repository ~> lenses.name},
