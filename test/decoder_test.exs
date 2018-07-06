@@ -2,7 +2,16 @@ defmodule Ramen.DecoderTest do
   use ExUnit.Case, async: true
 
   alias Ramen.Decoder
-  alias Ramen.{PullRequest, Participant, Comment, BuildStatus, PullRequestReview, ReviewRequest}
+
+  alias Ramen.{
+    PullRequest,
+    Participant,
+    Comment,
+    BuildStatus,
+    PullRequestReview,
+    ReviewRequest,
+    Issue
+  }
 
   describe "decode/2 - non-webhook" do
     test "decodes into a Pull Request" do
@@ -36,7 +45,7 @@ defmodule Ramen.DecoderTest do
       assert {:comment, :created, %Comment{}} = Decoder.decode(payload, "issue_comment")
     end
 
-    test "decodes into a Comment from a PullRequest - submitted" do
+    test "decodes into a Comment from a PullRequestReviewComment" do
       payload =
         File.read!("payloads/pull_request_review_comment.json")
         |> Poison.decode!()
@@ -96,6 +105,22 @@ defmodule Ramen.DecoderTest do
         |> Poison.decode!()
 
       assert {:build_status, :failure, %BuildStatus{}} = Decoder.decode(payload, "status")
+    end
+
+    test "decodes into an Issue - opened" do
+      payload =
+        File.read!("payloads/issue_created.json")
+        |> Poison.decode!()
+
+      assert {:issue, :opened, %Issue{assignee: nil}} = Decoder.decode(payload, "issues")
+    end
+
+    test "decodes into an Issue - assigned" do
+      payload =
+        File.read!("payloads/issue_assigned.json")
+        |> Poison.decode!()
+
+      assert {:issue, :assigned, %Issue{assignee: "MarcusSky"}} = Decoder.decode(payload, "issues")
     end
 
     test "raises when decoder is not implemented for an event" do
