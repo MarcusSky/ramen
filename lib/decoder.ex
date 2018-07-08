@@ -15,17 +15,18 @@ defmodule Ramen.Decoder do
   }
 
   def decode(payload, into: [PullRequest]) do
-    %{"title" => title,
-      "number" => number,
-      "requested_reviewers" => requested_reviewers} = payload
+    values =
+      :pull_request
+      |> Ramen.Lenses.for()
+      |> Ramen.Lenses.apply(payload)
 
     requested_reviewers =
-      Enum.map(requested_reviewers, fn x ->
+      Enum.map(values.requested_reviewers, fn x ->
         username = get_in(x, ["login"])
         %Participant{username: username}
       end)
 
-    values = [title: title, number: number, requested_reviewers: requested_reviewers]
+    values = Map.put(values, :requested_reviewers, requested_reviewers)
 
     struct(PullRequest, values)
   end
@@ -72,7 +73,7 @@ defmodule Ramen.Decoder do
   @spec decode(map(), String.t()) :: {atom, atom, %ReviewRequest{}}
   def decode(%{"action" => "review_requested"} = payload, "pull_request") do
     values =
-      :pull_request
+      :review_request
       |> Ramen.Lenses.for()
       |> Ramen.Lenses.apply(payload)
 
