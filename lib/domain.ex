@@ -1,5 +1,5 @@
 defmodule Ramen.PullRequest do
-  defstruct [:author, :url, :title, :number, :participants, :requested_reviewers, :repository]
+  defstruct [:author, :url, :title, :number, :participants, :requested_reviewers, :repository, :organization]
 end
 
 defmodule Ramen.Issue do
