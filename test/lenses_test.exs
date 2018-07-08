@@ -11,6 +11,22 @@ defmodule Ramen.LensesTest do
   end
 
   describe "for/1" do
+    test "returns a list of lenses for pull_request" do
+      result = Lenses.for(:pull_request)
+
+      assert is_list(result)
+
+      assert [
+               author: %Lens{get: _, put: _},
+               url: %Lens{get: _, put: _},
+               title: %Lens{get: _, put: _},
+               number: %Lens{get: _, put: _},
+               requested_reviewers: %Lens{get: _, put: _},
+               repository: %Lens{get: _, put: _},
+               organization: %Lens{get: _, put: _}
+             ] = result
+    end
+
     test "returns a list of lenses for issue" do
       result = Lenses.for(:issue)
 
@@ -77,8 +93,8 @@ defmodule Ramen.LensesTest do
              ] = result
     end
 
-    test "returns a list of lenses for pull_request" do
-      result = Lenses.for(:pull_request)
+    test "returns a list of lenses for review_request" do
+      result = Lenses.for(:review_request)
 
       assert is_list(result)
 
@@ -182,13 +198,13 @@ defmodule Ramen.LensesTest do
              } = result
     end
 
-    test "uses pull_request lens to transform payload into map" do
+    test "uses review_request lens to transform payload into map" do
       payload =
         File.read!("payloads/review_requested.json")
         |> Poison.decode!()
 
       result =
-        Lenses.for(:pull_request)
+        Lenses.for(:review_request)
         |> Lenses.apply(payload)
 
       assert is_map(result)
