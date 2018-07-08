@@ -15,9 +15,9 @@ defmodule Ramen.DecoderTest do
 
   describe "decode/2 - non-webhook" do
     test "decodes into a Pull Request" do
-      payload = %{"title" => "Title", "number" => 1}
+      payload = %{"title" => "Title", "number" => 1, "requested_reviewers" => []}
 
-      assert %PullRequest{title: "Title", number: 1} =
+      assert %PullRequest{title: "Title", number: 1, requested_reviewers: []} =
                Decoder.decode(payload, into: [PullRequest])
     end
 
