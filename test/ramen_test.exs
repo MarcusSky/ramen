@@ -11,7 +11,7 @@ defmodule RamenTest do
   describe "list_pull_requests/3" do
     setup do
       http_client =
-        http_client(:ok, %{status_code: 200, body: "[{\"title\":\"hello\", \"number\": 2}]"})
+        http_client(:ok, %{status_code: 200, body: "[{\"title\":\"hello\", \"number\": 2, \"requested_reviewers\": []}]"})
 
       %{http_client: http_client}
     end

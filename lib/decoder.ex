@@ -15,9 +15,19 @@ defmodule Ramen.Decoder do
   }
 
   def decode(payload, into: [PullRequest]) do
-    %{"title" => title, "number" => number} = payload
+    %{"title" => title,
+      "number" => number,
+      "requested_reviewers" => requested_reviewers} = payload
 
-    %PullRequest{title: title, number: number}
+    requested_reviewers =
+      Enum.map(requested_reviewers, fn x ->
+        username = get_in(x, ["login"])
+        %Participant{username: username}
+      end)
+
+    values = [title: title, number: number, requested_reviewers: requested_reviewers]
+
+    struct(PullRequest, values)
   end
 
   def decode(payload, into: [Participant]) do
