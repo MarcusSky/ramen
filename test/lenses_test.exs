@@ -232,7 +232,7 @@ defmodule Ramen.LensesTest do
       assert is_map(result)
 
       assert %{
-               author: "web-flow",
+               author: "Codertocat",
                branches: _,
                state: "success",
                url: "google.com"

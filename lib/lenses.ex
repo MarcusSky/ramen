@@ -3,8 +3,8 @@ defmodule Ramen.Lenses do
 
   def setup do
     ~w(comment body html_url user login issue title number repository
-       name owner pull_request action review state requested_reviewer base
-       target_url commit committer assignee branches repo requested_reviewers)
+       name owner pull_request review state requested_reviewer base author
+       target_url commit assignee branches repo requested_reviewers)
     |> Enum.reduce(%{}, fn x, acc ->
       Map.put(acc, String.to_atom(x), Lens.make_lens(x))
     end)
@@ -102,7 +102,7 @@ defmodule Ramen.Lenses do
     [
       {:state, lenses.state},
       {:url, lenses.target_url},
-      {:author, lenses.commit ~> lenses.committer ~> lenses.login},
+      {:author, lenses.commit ~> lenses.author ~> lenses.login},
       {:branches, lenses.branches}
     ]
   end
